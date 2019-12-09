@@ -10,6 +10,7 @@ import math
 from parcels import JITParticle, Variable
 from operator import attrgetter
 import numpy as np
+from netCDF4 import Dataset
 
 def deleteparticle(particle,fieldset,time):
     print('Particle '+str(particle.id)+' has died at t = '+str(time)+' at lon, lat, depth = '+str(particle.lon)+', '+str(particle.lat)+', '+str(particle.depth))
@@ -38,3 +39,20 @@ def removeBeached(particle,fieldset,time):
     if particle.lon == particle.prevlon and particle.lat == particle.prevlat:
         print('Particle '+str(particle.id)+' has beached at t = '+str(time)+' at lon, lat, depth = '+str(particle.lon)+', '+str(particle.lat)+', '+str(particle.depth))
         particle.delete()
+
+def selectBeached(filename):
+    nc = Dataset(filename+fb+str(runtime.seconds)+".nc")
+    x = nc.variables["lon"][:].squeeze()
+    y = nc.variables["lat"][:].squeeze()
+    z = nc.variables["z"][:].squeeze()
+    t = nc.variables["time"][:].squeeze()
+    b = nc.variables["finaldistance"][:].squeeze()
+    nc.close()
+    
+    mask = np.nonzero(b[:,-1]==0)[0]
+    xn = x[mask]
+    yn = y[mask]
+    zn = z[mask]
+    tn = t[mask]
+    bn = b[mask]
+    return xn,yn,zn,tn,bn
