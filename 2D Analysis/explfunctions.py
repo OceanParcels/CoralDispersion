@@ -100,3 +100,51 @@ def coraldistancemap(coralmask,edgemask,x_mesh,y_mesh):
     
     coralmap[~coralmask] = np.min(D2coralmatrix,axis=0)
     return D2coralmatrix,coralmap
+
+def followPath(i,j,coastmask,object1):
+    x = 0
+    y = 0
+    end = 0
+    
+    while end<1:
+        if -1<i+x<len(coastmask) and -1<j+y+1<len(coastmask[i]) and coastmask[i+x,j+y+1] == True:
+            object1[i+x,j+y+1] = True
+            coastmask[i+x,j+y+1] = False
+            y += 1
+        elif -1<i+x-1<len(coastmask) and -1<j+y+1<len(coastmask[i]) and coastmask[i+x-1,j+y+1] == True:
+            object1[i+x-1,j+y+1] = True
+            coastmask[i+x-1,j+y+1] = False
+            x += -1
+            y += 1
+        elif -1<i+x+1<len(coastmask) and -1<j+y+1<len(coastmask[i]) and coastmask[i+x+1,j+y+1] == True:
+            object1[i+x+1,j+y+1] = True
+            coastmask[i+x+1,j+y+1] = False
+            x += 1
+            y += 1
+        elif -1<i+x+1<len(coastmask) and -1<j+y<len(coastmask[i]) and coastmask[i+x+1,j+y] == True:
+            object1[i+x+1,j+y] = True
+            coastmask[i+x+1,j+y] = False
+            x += 1
+        elif -1<i+x-1<len(coastmask) and -1<j+y<len(coastmask[i]) and coastmask[i+x-1,j+y] == True:
+            object1[i+x-1,j+y] = True
+            coastmask[i+x-1,j+y] = False
+            x += -1
+        elif -1<i+x-1<len(coastmask) and -1<j+y-1<len(coastmask[i]) and coastmask[i+x-1,j+y-1] == True:
+            object1[i+x-1,j+y-1] = True
+            coastmask[i+x-1,j+y-1] = False
+            x += -1
+            y += -1
+        elif -1<i+x<len(coastmask) and -1<j+y-1<len(coastmask[i]) and coastmask[i+x,j+y-1] == True:
+            object1[i+x,j+y-1] = True
+            coastmask[i+x,j+y-1] = False
+            y += -1
+        elif -1<i+x+1<len(coastmask) and -1<j+y-1<len(coastmask[i]) and coastmask[i+x+1,j+y-1] == True:
+            object1[i+x+1,j+y-1] = True
+            coastmask[i+x+1,j+y-1] = False
+            x += 1
+            y += -1
+        else:
+            end += 1
+    return coastmask, object1, x, y
+
+# def checkSameObject(object1,objects,coastmask)
