@@ -93,7 +93,7 @@ def coraldistancemap(coralmask,edgemask,x_mesh,y_mesh):
     coralcoords = np.asarray((x_mesh[~coralmask],y_mesh[~coralmask]))
     edgecoords = np.asarray((x_mesh[edgemask],y_mesh[edgemask]))
     D2coralmatrix = np.zeros((len(edgecoords[0]),len(coralcoords[0])))
-    coralmap = np.zeros(x_mesh.shape)
+    coralmap = np.ones(x_mesh.shape)*9999
     
     for i in range(len(edgecoords[0])):
         D2coralmatrix[i,:] = np.sqrt(np.power(coralcoords[0,:]-edgecoords[0,i],2)+np.power(coralcoords[1,:]-edgecoords[1,i],2))
@@ -101,6 +101,8 @@ def coraldistancemap(coralmask,edgemask,x_mesh,y_mesh):
     coralmap[~coralmask] = np.min(D2coralmatrix,axis=0)
     return D2coralmatrix,coralmap
 
+def closestobjectmap(coralmask,objects,x_mesh,y_mesh):
+    """Function generating a map telling you which coral object is closest"""
 def followPath(i,j,coastmask,object1):
     x = 0
     y = 0

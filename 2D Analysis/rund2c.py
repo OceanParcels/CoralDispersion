@@ -6,15 +6,16 @@ Created on Thu Dec 12 14:09:03 2019
 
 @author: reint fischer
 """
-%matplotlib inline
+
 import sys
 sys.path.insert(0, "\\Users\\Gebruiker\\Documents\\GitHub\\parcels\\")  # Set path to find the newest parcels code
 
 from parcels import FieldSet, ParticleSet, Variable, JITParticle, ScipyParticle, AdvectionRK4_3D, ErrorCode, plotTrajectoriesFile
 import numpy as np
+from operator import attrgetter
 from datetime import timedelta
 from netCDF4 import Dataset,num2date,date2num
-from explfunctions import deleteparticle, removeNaNs, DistParticle, AdvectionRK4_3D_v, FinalDistance
+from explfunctions import deleteparticle, removeNaNs, DistParticle, FinalDistance
 
 filename = 'output-corals-regridded'
 fb = 'forward' #variable to determine whether the flowfields are analysed 'forward' or 'backward' in time
@@ -53,16 +54,22 @@ w[:,:,1,:] = -V[:,:,0,:]           # because depth = -Y, w = -V
 dist = np.zeros(u.shape)
 coralmap = np.load('coralmap.npy')
 dist[:,:,1,:] = np.asarray([coralmap]*len(u))
+closest = np.zeros(u.shape)
+closestobject = np.load('closestobject.npy')
+# index = np.ma.masked_array(closestobject,umask.mask)
+closest[:,:,1,:] = np.asarray([closestobject]*len(u))
 
 data = {'U': u,
         'V': v,
         'W': w,
-        'D': dist}
+        'D': dist,
+        'C': closest}
 dimensions = {'lon':xs,
               'lat':ys,
               'depth':depths,
               'time':times}
 fieldset = FieldSet.from_data(data=data, dimensions= dimensions, mesh='flat')
+fieldset.C.interp_method = 'nearest'
 
 class DistParticle(JITParticle):  # Define a new particle class that contains three extra variables
     finaldistance = Variable('finaldistance', initial=0., dtype=np.float32)  # the distance travelled
@@ -73,9 +80,12 @@ class DistParticle(JITParticle):  # Define a new particle class that contains th
     prevdepth = Variable('prevdepth', dtype=np.float32, to_write=False,
                         initial=attrgetter('depth'))  # the previous latitude.
     d2c = Variable('d2c', dtype=np.float32, initial=0.)
+    closestobject = Variable('closestobject', dtype=np.float32, initial=0.)
+    
     
 def SampleD(particle, fieldset, time):  # Custom function that samples fieldset.P at particle location
     particle.d2c = fieldset.D[time, particle.depth, particle.lat, particle.lon]
+    particle.closestobject = fieldset.C[time, particle.depth, particle.lat, particle.lon]
     
 lons, ds = np.meshgrid(xs,depths)                        # meshgrid at all gridpoints in the flow data
 um = np.ma.masked_invalid(u[0,:,1,:])                    # retrieve mask from flowfield to take out points over coral objects
@@ -98,13 +108,13 @@ pset = ParticleSet(fieldset=fieldset, pclass=DistParticle, lon=lons, lat=lats, d
 n_part = pset.size
 
 k_removeNaNs = pset.Kernel(removeNaNs)
-pset.execute(k_removeNaNs, runtime = timedelta(seconds=0))
+k_sample = pset.Kernel(SampleD)    # Casting the SampleP function to a kernel.
+
+pset.execute(k_removeNaNs+k_sample, runtime = timedelta(seconds=0))
 
 k_dist = pset.Kernel(FinalDistance)  # Casting the FinalDistance function to a kernel.
-k_sample = pset.Kernel(SampleD)    # Casting the SampleP function to a kernel.
-# k_adv = pset.Kernel(AdvectionRK4_3D_v)  # Casting the advection function with velocities to a kernel.
 
-pset.execute(AdvectionRK4_3D+k_dist,
+pset.execute(AdvectionRK4_3D+k_dist+k_sample,
              runtime=runtime,
              dt=dt,
              recovery = {ErrorCode.ErrorOutOfBounds:deleteparticle},
