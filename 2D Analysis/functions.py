@@ -53,10 +53,6 @@ def boundary_advectionRK4_3D(particle, fieldset, time):
     depth_frac = depth_cell - math.floor(depth_cell)
 
     frac_d2c = particle.d2c / fieldset.dx
-    f_linear1 = 2 * frac_d2c - 1
-    f_sq1 = 4*math.pow(frac_d2c -0.5,2)
-    f_exp1 = math.pow(10,-math.log(0.5,base=10) * frac_d2c - math.log(0.5,base=10))-3
-    f_cub1 = 8*math.pow(frac_d2c -0.5,3)
 
     if fieldset.beaching == 1: # linear - linear
         if B_binary >= 8: # border right
@@ -249,132 +245,6 @@ def boundary_advectionRK4_3D(particle, fieldset, time):
                     f_w = 2 * depth_frac
                     n_border += 1
 
-    # if fieldset.beaching == 4: # linear - log all velocities
-    #     f1 = f_linear1
-    #     f2 = f_exp1
-    #     if B_binary >= 8: # border right
-    #         B_binary += -8
-    #         if particle.d2c < fieldset.dx:
-    #             f_lon = f2 # no cross-boundary movement
-    #             f_depth = f1
-    #             n_border += 1
-    #     if B_binary >= 4: # border left
-    #         B_binary += -4
-    #         if particle.d2c < fieldset.dx and n_border == 0:
-    #             f_lon = f2
-    #             f_depth = f1
-    #             n_border += 1
-    #     if B_binary >= 2: # border below
-    #         B_binary += -2
-    #         if particle.d2c < fieldset.dx and n_border == 0:
-    #             f_depth = f2
-    #             f_lon = f1
-    #             n_border += 1
-    #         elif particle.d2c < fieldset.dx and particle.border > 8:
-    #             if lon_frac-depth_frac < 0:
-    #                 f_depth = f2
-    #                 f_lon = f1
-    #                 n_border += 1
-    #             elif lon_frac-depth_frac > 0:
-    #                 f_depth = f1
-    #                 f_lon = f2
-    #                 n_border += 1
-    #         elif particle.d2c < fieldset.dx:
-    #             if lon_frac+depth_frac > 1:
-    #                 f_depth = f2
-    #                 f_lon = f1
-    #                 n_border += 1
-    #             elif lon_frac+depth_frac < 1:
-    #                 f_depth = f1
-    #                 f_lon = f2
-    #                 n_border += 1
-    #     if B_binary == 1:  # border above
-    #         if particle.d2c < fieldset.dx and n_border == 0:
-    #             f_depth = f2
-    #             f_lon = f1
-    #             n_border += 1
-    #         elif particle.d2c < fieldset.dx and particle.border > 8:
-    #             if lon_frac + depth_frac > 1:
-    #                 f_depth = f1
-    #                 f_lon = f2
-    #                 n_border += 1
-    #             elif lon_frac + depth_frac < 1:
-    #                 f_depth = f2
-    #                 f_lon = f1
-    #                 n_border += 1
-    #         elif particle.d2c < fieldset.dx:
-    #             if lon_frac - depth_frac < 0:
-    #                 f_depth = f1
-    #                 f_lon = f2
-    #                 n_border += 1
-    #             elif lon_frac - depth_frac > 0:
-    #                 f_depth = f2
-    #                 f_lon = f1
-    #                 n_border += 1
-    #
-    # if fieldset.beaching == 5: # linear - sqrt
-    #     f1 = f_linear1
-    #     f2 = f_cub1
-    #     if B_binary >= 8:  # border right
-    #         B_binary += -8
-    #         if particle.d2c < fieldset.dx:
-    #             f_lon = f2  # no cross-boundary movement
-    #             f_depth = f1
-    #             n_border += 1
-    #     if B_binary >= 4:  # border left
-    #         B_binary += -4
-    #         if particle.d2c < fieldset.dx and n_border == 0:
-    #             f_lon = f2
-    #             f_depth = f1
-    #             n_border += 1
-    #     if B_binary >= 2:  # border below
-    #         B_binary += -2
-    #         if particle.d2c < fieldset.dx and n_border == 0:
-    #             f_depth = f2
-    #             f_lon = f1
-    #             n_border += 1
-    #         elif particle.d2c < fieldset.dx and particle.border > 8:
-    #             if lon_frac - depth_frac < 0:
-    #                 f_depth = f2
-    #                 f_lon = f1
-    #                 n_border += 1
-    #             elif lon_frac - depth_frac > 0:
-    #                 f_depth = f1
-    #                 f_lon = f2
-    #                 n_border += 1
-    #         elif particle.d2c < fieldset.dx:
-    #             if lon_frac + depth_frac > 1:
-    #                 f_depth = f2
-    #                 f_lon = f1
-    #                 n_border += 1
-    #             elif lon_frac + depth_frac < 1:
-    #                 f_depth = f1
-    #                 f_lon = f2
-    #                 n_border += 1
-    #     if B_binary == 1:  # border above
-    #         if particle.d2c < fieldset.dx and n_border == 0:
-    #             f_depth = f2
-    #             f_lon = f1
-    #             n_border += 1
-    #         elif particle.d2c < fieldset.dx and particle.border > 8:
-    #             if lon_frac + depth_frac > 1:
-    #                 f_depth = f1
-    #                 f_lon = f2
-    #                 n_border += 1
-    #             elif lon_frac + depth_frac < 1:
-    #                 f_depth = f2
-    #                 f_lon = f1
-    #                 n_border += 1
-    #         elif particle.d2c < fieldset.dx:
-    #             if lon_frac - depth_frac < 0:
-    #                 f_depth = f1
-    #                 f_lon = f2
-    #                 n_border += 1
-    #             elif lon_frac - depth_frac > 0:
-    #                 f_depth = f2
-    #                 f_lon = f1
-    #                 n_border += 1
-
     if particle.closestobject == 22:
         f_u = 0
         f_w = 0
@@ -477,7 +347,7 @@ def followPath(i,j,coastmask,object1):
             end += 1
     return coastmask, object1, x, y
 
-def CreateConmatrixSingle(d2cmax,dataset,objects,runtime):
+def AdjacencyMatrix(d2cmax, dataset, objects, runtime):
     """Function creating a directed adjacency or connectivity matrix weighted by the amount of particles entering both respective boundary layers
     d2cmax is the depth of the boundary layer, dataset is an xarray dataset, objects contains Boolean arrays with the coorinates of each objects marked as True
     runtime is the runtime of the parcels execution"""
@@ -507,7 +377,7 @@ def CreateConmatrixSingle(d2cmax,dataset,objects,runtime):
     return connectivity
 
 # Create a connectivity matrix with 'fresh' particles in # particles per second
-def CreateConmatrixRepeat(d2cmax,dataset,objects,runtime):
+def VolumeFluxes(d2cmax, dataset, objects, runtime):
 
     connectivity = np.zeros(len(objects))
     
@@ -525,7 +395,7 @@ def CreateConmatrixRepeat(d2cmax,dataset,objects,runtime):
     return connectivity
 
 # Create a connectivity matrix in # particles per meter per second
-def CreateConmatrixSinglePerarea(d2cmax,dataset,objects,runtime,dx):
+def AdjacencyMatrixPerarea(d2cmax, dataset, objects, runtime, dx):
     
     connectivity = np.zeros((len(objects),len(objects)))
         
@@ -556,7 +426,7 @@ def CreateConmatrixSinglePerarea(d2cmax,dataset,objects,runtime,dx):
     return connectivity
 
 # Create a connectivity matrix with 'fresh' particles in # particles per meter per second
-def CreateConmatrixRepeatPerarea(d2cmax,dataset,objects,runtime,dx):
+def VolumeFluxesPerarea(d2cmax, dataset, objects, runtime, dx):
 
     connectivity = np.zeros(len(objects))
 

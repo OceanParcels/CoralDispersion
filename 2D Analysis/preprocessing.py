@@ -23,7 +23,7 @@ Created on Mon Feb 17 09:55:03 2020
 
 import numpy as np
 import xarray as xr
-from explfunctions import coraldistancemap, followPath 
+from functions import coraldistancemap, followPath
 
 foldername = '16objects'
 flow = 'uniform'
@@ -155,7 +155,6 @@ np.save(foldername+'/preprocessed/'+'objects',objects,allow_pickle=True)
 distancearray = np.zeros((len(objects), len(objects[0]), len(objects[0, 0]))) # Initialise object containing the distances to each object
 for i in range(len(objects)):
     distancearray[i] = coraldistancemap(objects[i], x, y)
-# distancearray[-1] = np.ones(x.shape) * -1
 closestobject = np.argmin(distancearray, axis=0)
 closestobject[umask.mask] = [len(objects)]*np.sum(umask.mask)
 np.save(foldername +'/preprocessed/' +'closestobject', closestobject, allow_pickle=True)

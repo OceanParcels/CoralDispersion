@@ -20,7 +20,7 @@ Created on Mon May 18 23:55:03 2020
 
 import numpy as np
 import xarray as xr
-from explfunctions import CreateConmatrixSingle, CreateConmatrixRepeat, CreateConmatrixSinglePerarea, CreateConmatrixRepeatPerarea, TotalVolumeFlux, TotalVolumeFluxPerarea
+from functions import AdjacencyMatrix, VolumeFluxes, AdjacencyMatrixPerarea, VolumeFluxesPerarea, TotalVolumeFlux, TotalVolumeFluxPerarea
 from datetime import timedelta
 
 def run(flow,dt,bconstant,repeat,repeatdt = 0.1,foldername ='21objects',d2cmax=0.05):
@@ -47,14 +47,14 @@ def run(flow,dt,bconstant,repeat,repeatdt = 0.1,foldername ='21objects',d2cmax=0
     objects = np.load(foldername + '/preprocessed/' + 'objects.npy')
 
     if repeat:
-        # conmatrix = CreateConmatrixRepeat(d2cmax, data, objects, runtime.total_seconds())
-        # np.save(
-        #     foldername + '/postprocessed/freshmatrix-Repeat-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-        #         d2cmax), conmatrix, allow_pickle=True)
-        # conmatrix = CreateConmatrixRepeatPerarea(d2cmax, data, objects, runtime.total_seconds(), dx)
-        # np.save(
-        #     foldername + '/postprocessed/freshmatrix-Repeat-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-        #         d2cmax), conmatrix, allow_pickle=True)
+        conmatrix = VolumeFluxes(d2cmax, data, objects, runtime.total_seconds())
+        np.save(
+            foldername + '/postprocessed/freshmatrix-Repeat-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                d2cmax), conmatrix, allow_pickle=True)
+        conmatrix = VolumeFluxesPerarea(d2cmax, data, objects, runtime.total_seconds(), dx)
+        np.save(
+            foldername + '/postprocessed/freshmatrix-Repeat-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                d2cmax), conmatrix, allow_pickle=True)
         TVF = TotalVolumeFlux(d2cmax, data, objects, runtime.total_seconds())
         np.save(
             foldername + '/postprocessed/totalvolumeflux-Repeat-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
@@ -64,20 +64,20 @@ def run(flow,dt,bconstant,repeat,repeatdt = 0.1,foldername ='21objects',d2cmax=0
             foldername + '/postprocessed/totalvolumeflux-Repeat-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
                 d2cmax), TVF, allow_pickle=True)
         if len(objects)>20:
-            # conmatrix = np.load(
-            #     foldername + '/postprocessed/freshmatrix-Repeat-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-            #         d2cmax) + '.npy')
-            # conmatrix = conmatrix[labellist]
-            # np.save(
-            #     foldername + '/postprocessed/freshmatrix-Repeat-Partial-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-            #         d2cmax), conmatrix, allow_pickle=True)
-            # conmatrix = np.load(
-            #     foldername + '/postprocessed/freshmatrix-Repeat-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-            #         d2cmax) + '.npy')
-            # conmatrix = conmatrix[labellist]
-            # np.save(
-            #     foldername + '/postprocessed/freshmatrix-Repeat-Partial-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-            #         d2cmax), conmatrix, allow_pickle=True)
+            conmatrix = np.load(
+                foldername + '/postprocessed/freshmatrix-Repeat-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax) + '.npy')
+            conmatrix = conmatrix[labellist]
+            np.save(
+                foldername + '/postprocessed/freshmatrix-Repeat-Partial-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax), conmatrix, allow_pickle=True)
+            conmatrix = np.load(
+                foldername + '/postprocessed/freshmatrix-Repeat-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax) + '.npy')
+            conmatrix = conmatrix[labellist]
+            np.save(
+                foldername + '/postprocessed/freshmatrix-Repeat-Partial-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax), conmatrix, allow_pickle=True)
             TVF = np.load(
                 foldername + '/postprocessed/totalvolumeflux-Repeat-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
                     d2cmax) + '.npy')
@@ -93,22 +93,22 @@ def run(flow,dt,bconstant,repeat,repeatdt = 0.1,foldername ='21objects',d2cmax=0
                 foldername + '/postprocessed/totalvolumeflux-Repeat-Partial-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
                     d2cmax), TVF, allow_pickle=True)
         else:
-            # conmatrix = np.load(
-            #     foldername + '/postprocessed/freshmatrix-Repeat-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-            #         d2cmax) + '.npy')
-            # for i in notlist:
-            #     conmatrix = np.insert(conmatrix, i, 0)
-            # np.save(
-            #     foldername + '/postprocessed/freshmatrix-Repeat-Sparse-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-            #         d2cmax), conmatrix, allow_pickle=True)
-            # conmatrix = np.load(
-            #     foldername + '/postprocessed/freshmatrix-Repeat-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-            #         d2cmax) + '.npy')
-            # for i in notlist:
-            #     conmatrix = np.insert(conmatrix, i, 0)
-            # np.save(
-            #     foldername + '/postprocessed/freshmatrix-Repeat-Sparse-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-            #         d2cmax), conmatrix, allow_pickle=True)
+            conmatrix = np.load(
+                foldername + '/postprocessed/freshmatrix-Repeat-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax) + '.npy')
+            for i in notlist:
+                conmatrix = np.insert(conmatrix, i, 0)
+            np.save(
+                foldername + '/postprocessed/freshmatrix-Repeat-Sparse-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax), conmatrix, allow_pickle=True)
+            conmatrix = np.load(
+                foldername + '/postprocessed/freshmatrix-Repeat-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax) + '.npy')
+            for i in notlist:
+                conmatrix = np.insert(conmatrix, i, 0)
+            np.save(
+                foldername + '/postprocessed/freshmatrix-Repeat-Sparse-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax), conmatrix, allow_pickle=True)
             TVF = np.load(
                 foldername + '/postprocessed/totalvolumeflux-Repeat-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
                     d2cmax) + '.npy')
@@ -125,82 +125,51 @@ def run(flow,dt,bconstant,repeat,repeatdt = 0.1,foldername ='21objects',d2cmax=0
             np.save(
                 foldername + '/postprocessed/totalvolumeflux-Repeat-Sparse-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
                     d2cmax), TVF, allow_pickle=True)
-
-    # else:
-    #     conmatrix = CreateConmatrixSingle(d2cmax, data, objects, runtime.total_seconds())
-    #     np.save(foldername + '/postprocessed/conmatrix-Single-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-    #             d2cmax), conmatrix, allow_pickle=True)
-    #     conmatrix = CreateConmatrixSinglePerarea(d2cmax, data, objects, runtime.total_seconds(), dx)
-    #     np.save(foldername + '/postprocessed/conmatrix-Single-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-    #             d2cmax), conmatrix, allow_pickle=True)
-    #     if len(objects)>20:
-    #         conmatrix = np.load(foldername + '/postprocessed/conmatrix-Single-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-    #             d2cmax)+'.npy')
-    #         conmatrix = conmatrix[labellist][:, labellist]
-    #         np.save(
-    #             foldername + '/postprocessed/conmatrix-Single-Partial-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-    #                 d2cmax), conmatrix, allow_pickle=True)
-    #         conmatrix = np.load(
-    #             foldername + '/postprocessed/conmatrix-Single-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-    #                 d2cmax) + '.npy')
-    #         conmatrix = conmatrix[labellist][:, labellist]
-    #         np.save(
-    #             foldername + '/postprocessed/conmatrix-Single-Partial-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-    #                 d2cmax), conmatrix, allow_pickle=True)
-    #     else:
-    #         conmatrix = np.load(
-    #             foldername + '/postprocessed/conmatrix-Single-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-    #                 d2cmax) + '.npy')
-    #         for i in notlist:
-    #             conmatrix = np.insert(conmatrix, i, 0, axis=0)
-    #         for j in notlist:
-    #             conmatrix = np.insert(conmatrix, j, 0, axis=1)
-    #         np.save(
-    #             foldername + '/postprocessed/conmatrix-Single-Sparse-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-    #                 d2cmax), conmatrix, allow_pickle=True)
-    #         conmatrix = np.load(
-    #             foldername + '/postprocessed/conmatrix-Single-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-    #                 d2cmax) + '.npy')
-    #         for i in notlist:
-    #             conmatrix = np.insert(conmatrix, i, 0, axis=0)
-    #         for j in notlist:
-    #             conmatrix = np.insert(conmatrix, j, 0, axis=1)
-    #         np.save(
-    #             foldername + '/postprocessed/conmatrix-Single-Sparse-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
-    #                 d2cmax), conmatrix, allow_pickle=True)
+    else:
+        conmatrix = AdjacencyMatrix(d2cmax, data, objects, runtime.total_seconds())
+        np.save(foldername + '/postprocessed/conmatrix-Single-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                d2cmax), conmatrix, allow_pickle=True)
+        conmatrix = AdjacencyMatrixPerarea(d2cmax, data, objects, runtime.total_seconds(), dx)
+        np.save(foldername + '/postprocessed/conmatrix-Single-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                d2cmax), conmatrix, allow_pickle=True)
+        if len(objects)>20:
+            conmatrix = np.load(foldername + '/postprocessed/conmatrix-Single-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                d2cmax)+'.npy')
+            conmatrix = conmatrix[labellist][:, labellist]
+            np.save(
+                foldername + '/postprocessed/conmatrix-Single-Partial-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax), conmatrix, allow_pickle=True)
+            conmatrix = np.load(
+                foldername + '/postprocessed/conmatrix-Single-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax) + '.npy')
+            conmatrix = conmatrix[labellist][:, labellist]
+            np.save(
+                foldername + '/postprocessed/conmatrix-Single-Partial-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax), conmatrix, allow_pickle=True)
+        else:
+            conmatrix = np.load(
+                foldername + '/postprocessed/conmatrix-Single-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax) + '.npy')
+            for i in notlist:
+                conmatrix = np.insert(conmatrix, i, 0, axis=0)
+            for j in notlist:
+                conmatrix = np.insert(conmatrix, j, 0, axis=1)
+            np.save(
+                foldername + '/postprocessed/conmatrix-Single-Sparse-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax), conmatrix, allow_pickle=True)
+            conmatrix = np.load(
+                foldername + '/postprocessed/conmatrix-Single-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax) + '.npy')
+            for i in notlist:
+                conmatrix = np.insert(conmatrix, i, 0, axis=0)
+            for j in notlist:
+                conmatrix = np.insert(conmatrix, j, 0, axis=1)
+            np.save(
+                foldername + '/postprocessed/conmatrix-Single-Sparse-Perarea-' + beaching_strategy + '-' + flow + '-' + tstep + '-' + str(
+                    d2cmax), conmatrix, allow_pickle=True)
 
 
 
 if __name__ == "__main__":
-    run('waveparabolic', 0.001, 0, True, foldername='21objects')
-    run('parabolic', 0.001, 0, True, foldername='21objects')
-    run('waveparabolic', 0.001, 0, True, foldername='16objects')
-    run('parabolic', 0.001, 0, True, foldername='16objects')
-    run('waveparabolic', 0.001, 1, True, foldername='21objects')
-    run('parabolic', 0.001, 1, True, foldername='21objects')
-    run('waveparabolic', 0.001, 1, True, foldername='16objects')
-    run('parabolic', 0.001, 1, True, foldername='16objects')
-    # run('waveparabolic', 0.001, 2, True, foldername='21objects')
-    # run('parabolic', 0.001, 2, True, foldername='21objects')
-    # run('waveparabolic', 0.001, 2, True, foldername='16objects')
-    # run('parabolic', 0.001, 2, True, foldername='16objects')
-    run('waveparabolic', 0.001, 3, True, foldername='21objects')
-    run('parabolic', 0.001, 3, True, foldername='21objects')
-    run('waveparabolic', 0.001, 3, True, foldername='16objects')
-    run('parabolic', 0.001, 3, True, foldername='16objects')
-    run('parabolic',0.001,2,True,d2cmax=0.05)
-    run('parabolic',0.001,2,True,d2cmax=0.04)
-    run('parabolic', 0.001, 2, True,d2cmax=0.03)
-    run('parabolic', 0.001, 2, True,d2cmax=0.02)
-    run('parabolic', 0.001, 2, True, d2cmax=0.05, foldername='16objects')
-    run('parabolic', 0.001, 2, True, d2cmax=0.04, foldername='16objects')
-    run('parabolic', 0.001, 2, True, d2cmax=0.03, foldername='16objects')
-    run('parabolic', 0.001, 2, True, d2cmax=0.02, foldername='16objects')
-    run('waveparabolic', 0.001, 2, True, d2cmax=0.05)
-    run('waveparabolic', 0.001, 2, True, d2cmax=0.04)
-    run('waveparabolic', 0.001, 2, True, d2cmax=0.03)
-    run('waveparabolic', 0.001, 2, True, d2cmax=0.02)
-    run('waveparabolic', 0.001, 2, True, d2cmax=0.05, foldername='16objects')
-    run('waveparabolic', 0.001, 2, True, d2cmax=0.04, foldername='16objects')
-    run('waveparabolic', 0.001, 2, True, d2cmax=0.03, foldername='16objects')
-    run('waveparabolic', 0.001, 2, True, d2cmax=0.02, foldername='16objects')
+    run('waveparabolic', 0.001, 2, True, foldername='21objects')
+    run('parabolic', 0.001, 2, True, foldername='21objects')

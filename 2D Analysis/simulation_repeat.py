@@ -7,12 +7,10 @@ from parcels import FieldSet, ParticleSet, AdvectionRK4_3D, ErrorCode
 from datetime import timedelta
 from netCDF4 import Dataset,num2date,date2num
 
-from explfunctions import deleteparticle, removeNaNs, DistParticle, FinalDistance, Samples, boundary_advectionRK4_3D
+from functions import deleteparticle, removeNaNs, DistParticle, FinalDistance, Samples, boundary_advectionRK4_3D
 
 def run(flow,dt,bconstant,init=False,repeat=True,repeatdt = 0.1,foldername ='21objects',spinup=6):
     DistParticle.setLastID(0)
-    foldername = foldername
-    flow = flow
     filename = flow
     fb = 'forward'  # variable to determine whether the flowfields are analysed 'forward' or 'backward' in time
     bconstant = bconstant
@@ -92,24 +90,21 @@ def run(flow,dt,bconstant,init=False,repeat=True,repeatdt = 0.1,foldername ='21o
 
     outputdt = timedelta(seconds=0.1)  # timesteps to create output at
     dt = timedelta(seconds=dt)  # timesteps to calculate particle trajectories
-    runtime = timedelta(seconds=60-spinup)  # total time to execute the particleset
+    runtime = timedelta(seconds=60)  # total time to execute the particleset
     lati = np.asarray([0] * len(loni))  # all particles must start and stay on the middle value of the extra dimension
-    inittime = np.asarray([spinup] * len(loni)).flatten()  # default time to start the particles is zero
-    if fb == 'backward':  # change timestep and start time when in 'backward' mode
-        dt = dt * -1
-        inittime = np.asarray([runtime.seconds] * len(lons))
+    inittime = np.asarray([0] * len(loni)).flatten()  # default time to start the particles is zero
 
     if repeat:
         repeatdt = repeatdt
         lonr = np.ma.array(lons[:,0],mask=[False]*len(lons[:,0]))
         dr = np.ma.array(ds[:,0],mask=[False]*len(ds[:,0]))
-        r_steps = int((runtime.total_seconds() - 12)/ repeatdt)
+        r_steps = int((runtime.total_seconds())/ repeatdt)
 
         if not init:
             loni = lonr
             di = dr
             lati = np.ma.array(np.asarray([0] * len(lonr)), mask=[False]* len(lonr))
-            inittime = np.ma.array(np.asarray([6] * len(lonr)), mask=[False]* len(lonr))
+            inittime = np.ma.array(np.asarray([0] * len(lonr)), mask=[False]* len(lonr))
 
         for i in range(r_steps):
             loni = np.ma.concatenate((loni, lonr))
@@ -130,7 +125,7 @@ def run(flow,dt,bconstant,init=False,repeat=True,repeatdt = 0.1,foldername ='21o
     k_dist = pset.Kernel(FinalDistance)  # Casting the FinalDistance function to a kernel.
     k_bound = pset.Kernel(boundary_advectionRK4_3D)  # Casting the Boundary_Advection function to a kernel.
 
-    output_file=pset.ParticleFile(name=foldername+'/pfiles/'+'spinr'+str(repeatdt)[2:]+'-B'+str(fieldset.beaching)+'-'+flow+'-'+str(abs(dt.total_seconds()))[2:]+'-'+fb, outputdt=outputdt)
+    output_file=pset.ParticleFile(name=foldername+'/pfiles/'+'r'+str(repeatdt)[2:]+'-B'+str(fieldset.beaching)+'-'+flow+'-'+str(abs(dt.total_seconds()))[2:]+'-'+fb, outputdt=outputdt)
 
     stime = ostime.time()
     pset.execute(k_bound + k_dist + k_sample,
@@ -156,17 +151,7 @@ def run(flow,dt,bconstant,init=False,repeat=True,repeatdt = 0.1,foldername ='21o
         n1_part) + ', ' + str(n2_part) + ', ' + str(n3_part))
 
 if __name__ == "__main__":
-    run('waveparabolic', 0.001, 0,foldername='21objects')
-    run('parabolic', 0.001, 0, foldername='21objects')
-    run('waveparabolic', 0.001, 0, foldername='16objects')
-    run('parabolic', 0.001, 0, foldername='16objects')
-    run('waveparabolic', 0.001, 1,foldername='21objects')
-    run('parabolic', 0.001, 1, foldername='21objects')
-    run('waveparabolic', 0.001, 1, foldername='16objects')
-    run('parabolic', 0.001, 1, foldername='16objects')
-    run('waveparabolic', 0.001, 3,foldername='21objects')
-    run('parabolic', 0.001, 3, foldername='21objects')
-    run('waveparabolic', 0.001, 3, foldername='16objects')
-    run('parabolic', 0.001, 3, foldername='16objects')
+    run('waveparabolic', 0.001, 2,foldername='21objects')
+    run('parabolic', 0.001, 2, foldername='21objects')
 
 

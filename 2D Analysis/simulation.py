@@ -16,12 +16,10 @@ from parcels import FieldSet, ParticleSet, AdvectionRK4_3D, ErrorCode
 from datetime import timedelta
 from netCDF4 import Dataset,num2date,date2num
 
-from explfunctions import deleteparticle, removeNaNs, DistParticle, FinalDistance, Samples, boundary_advectionRK4_3D
+from functions import deleteparticle, removeNaNs, DistParticle, FinalDistance, Samples, boundary_advectionRK4_3D
 
-def run(flow,dt,bconstant,repeat=True,repeatdt = 2,foldername ='21objects'):
+def run(flow,dt,bconstant,foldername ='21objects'):
     DistParticle.setLastID(0)
-    foldername = '21objects'
-    flow = flow
     filename = flow
     fb = 'forward' # variable to determine whether the flowfields are analysed 'forward' or 'backward' in time
     bconstant = bconstant
@@ -84,19 +82,17 @@ def run(flow,dt,bconstant,repeat=True,repeatdt = 2,foldername ='21objects'):
     fieldset.C.interp_method = 'nearest'
     fieldset.add_constant('dx', X[1]-X[0])
     fieldset.add_constant('beaching', bconstant)
-    if repeat:
-        fieldset.add_constant('repeatdt', repeatdt)
     fieldset.add_constant('x0',xs[0])
     fieldset.add_constant('y0',ys[0])
     fieldset.add_constant('z0',depths[0])
 
-    lons, ds = np.meshgrid(xs,depths[16:])                        # meshgrid at all gridpoints in the flow data
+    lons, ds = np.meshgrid(xs,depths[:])                        # meshgrid at all gridpoints in the flow data
     um = np.ma.masked_invalid(u[0,:,1,:])                    # retrieve mask from flowfield to take out points over coral objects
 
-    lons = np.ma.masked_array(lons,mask=um.mask[16:,:])             # mask points in meshgrid
+    lons = np.ma.masked_array(lons,mask=um.mask[:,:])             # mask points in meshgrid
     lons = np.ma.filled(lons,-999)
     lons = lons.flatten()
-    ds = np.ma.masked_array(ds,mask=um.mask[16:,:])                 # mask points in meshgrid
+    ds = np.ma.masked_array(ds,mask=um.mask[:,:])                 # mask points in meshgrid
     ds = np.ma.filled(ds,-999)
     ds = ds.flatten()
 
@@ -109,19 +105,7 @@ def run(flow,dt,bconstant,repeat=True,repeatdt = 2,foldername ='21objects'):
         dt = dt*-1
         inittime = np.asarray([runtime.seconds]*len(lons))
 
-    if repeat:
-        r_steps = int((runtime.total_seconds() - 6) / repeatdt)
-        loni = lons
-        di = ds
-        lati = lats
-
-        for i in range(r_steps):
-            loni = np.ma.concatenate((loni, lons))
-            di = np.ma.concatenate((di, ds))
-            lati = np.concatenate((lati, lats))
-            inittime = np.concatenate((inittime, np.asarray([inittime[-1] + repeatdt] * len(lons))))
-
-    pset = ParticleSet(fieldset=fieldset, pclass=DistParticle, lon=loni, lat=lati, depth=di,time=inittime)
+    pset = ParticleSet(fieldset=fieldset, pclass=DistParticle, lon=lons, lat=lats, depth=ds,time=inittime)
     n1_part = pset.size
 
     k_removeNaNs = pset.Kernel(removeNaNs)
@@ -133,7 +117,7 @@ def run(flow,dt,bconstant,repeat=True,repeatdt = 2,foldername ='21objects'):
     k_dist = pset.Kernel(FinalDistance)  # Casting the FinalDistance function to a kernel.
     k_bound = pset.Kernel(boundary_advectionRK4_3D)  # Casting the Boundary_Advection function to a kernel.
 
-    output_file=pset.ParticleFile(name=foldername+'/pfiles/testB'+str(fieldset.beaching)+'-'+flow+'-'+str(abs(dt.total_seconds()))[2:]+'-'+fb, outputdt=outputdt)
+    output_file=pset.ParticleFile(name=foldername+'/pfiles/B'+str(fieldset.beaching)+'-'+flow+'-'+str(abs(dt.total_seconds()))[2:]+'-'+fb, outputdt=outputdt)
 
     stime = ostime.time()
     pset.execute(k_bound + k_dist + k_sample,
@@ -145,7 +129,6 @@ def run(flow,dt,bconstant,repeat=True,repeatdt = 2,foldername ='21objects'):
 
     output_file.add_metadata('outputdt',str(outputdt.total_seconds())+' in seconds')
     output_file.add_metadata('runtime',str(runtime.total_seconds())+' in seconds')
-    output_file.add_metadata('repeatdt', str(repeatdt) + ' in seconds')
     output_file.add_metadata('dt',str(dt.total_seconds())+' in seconds')
     output_file.add_metadata('dx', float(np.abs(X[1]-X[0])))
     output_file.add_metadata('executiontime',str(etime-stime)+' in seconds')
@@ -157,30 +140,7 @@ def run(flow,dt,bconstant,repeat=True,repeatdt = 2,foldername ='21objects'):
     print('Amount of particles at initialisation, 0th timestep and after execution respectively:'+str(n1_part)+', '+str(n2_part)+', '+str(n3_part))
 
 if __name__ == "__main__":
-    # run('waveparabolic', 0.001, 0)
-    # run('waveparabolic', 0.001, 1)
     run('waveparabolic', 0.001, 2)
-    # run('waveparabolic', 0.001, 3)
-    # run('parabolic', 0.001, 0)
-    # run('parabolic', 0.001, 1)
-    run('parabolic', 0.001, 2)
-    # run('parabolic', 0.001, 3)
-    # run('uniform', 0.001, 0)
-    # run('uniform', 0.001, 1)
-    # run('uniform', 0.001, 2)
-    # run('uniform', 0.001, 3)
-    # run('waveparabolic', 0.01, 0)
-    # run('waveparabolic', 0.01, 1)
-    # run('waveparabolic', 0.01, 2)
-    # run('waveparabolic', 0.01, 3)
-    # run('parabolic', 0.01, 0)
-    # run('parabolic', 0.01, 1)
-    # run('parabolic', 0.01, 2)
-    # run('parabolic', 0.01, 3)
-    # run('uniform', 0.01, 0)
-    # run('uniform', 0.01, 1)
-    # run('uniform', 0.01, 2)
-    # run('uniform', 0.01, 3)
 
 
 
